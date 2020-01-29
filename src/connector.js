@@ -1,4 +1,4 @@
-import { signalFn } from "./signal";
+import { source } from "./signal";
 
 /**
  * A connector is a helper to simplify building signal circuits. Connectors
@@ -33,7 +33,7 @@ function cacheAndReturn(connectorId, signal) {
  * @param {function} inputsFn A function returning input signals.
  * @param {function} fn A function expecting input signals as first argument.
  * @returns {function} A new function that applies the signal values extracted
- *    from `signalFn` together with the provided arguments to the original `fn`.
+ *    from `source` together with the provided arguments to the original `fn`.
  *
  * @example
  *
@@ -106,7 +106,7 @@ export function connect(connectorId) {
  */
 export function connector(connectorId, computationFn) {
   rawConnector(connectorId, connectorId =>
-    signalFn(() => computationFn(connectorId)),
+    source(() => computationFn(connectorId)),
   );
 }
 
@@ -115,7 +115,7 @@ export function connector(connectorId, computationFn) {
  *
  * @param {string} connectorId A connector identifier
  * @param {function} connectorFn A function which gets one argument,
- *    `connectorId` and must return a `signalFn`.
+ *    `connectorId` and must return a `source`.
  *
  * @example
  *

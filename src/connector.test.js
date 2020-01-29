@@ -5,7 +5,7 @@ import {
   rawConnector,
   withInputSignals,
 } from "./connector";
-import { signal, signalFn } from "./signal";
+import { signal, source } from "./signal";
 
 /* global global */
 
@@ -81,14 +81,14 @@ describe("connector", () => {
 
 describe("rawConnector", () => {
   it("transparently registers provided signal", () => {
-    let signal = signalFn(() => "foo");
+    let signal = source(() => "foo");
     rawConnector("foo", () => signal);
     expect(connect("foo")).toBe(signal);
   });
   it("removes cached signals when overwriting", () => {
-    rawConnector("foo", () => signalFn(() => "foo"));
+    rawConnector("foo", () => source(() => "foo"));
     const s1 = connect("foo");
-    rawConnector("foo", () => signalFn(() => "foo"));
+    rawConnector("foo", () => source(() => "foo"));
     const s2 = connect("foo");
     expect(s1).not.toBe(s2);
     expect(global.console.warn).toHaveBeenCalledWith(

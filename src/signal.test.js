@@ -1,4 +1,4 @@
-import { signal, signalFn } from "./signal";
+import { signal, source } from "./signal";
 
 describe("signal", () => {
   it("returns its current value", () => {
@@ -59,16 +59,16 @@ describe("signal", () => {
   });
 });
 
-describe("signalFn", () => {
+describe("source", () => {
   it("returns the result of fn as its current value", () => {
     let runs = 0;
-    let s = signalFn(() => ++runs);
+    let s = source(() => ++runs);
     expect(s.value()).toBe(1);
   });
   it("connects to input signals", () => {
     let s1 = signal("foo");
-    let s2 = signalFn(() => s1.value());
-    let s3 = signalFn(() => s2.value());
+    let s2 = source(() => s1.value());
+    let s3 = source(() => s2.value());
 
     expect(s3.inputs()).toEqual([s2]);
     expect(s2.inputs()).toEqual([s1]);
@@ -76,16 +76,16 @@ describe("signalFn", () => {
   it("disconnects from unused input signals", () => {
     let s1 = signal("foo");
     let s2 = signal("bar");
-    let s3 = signalFn(() => (s1.value() === "foo" ? s2.value() : s1.value()));
+    let s3 = source(() => (s1.value() === "foo" ? s2.value() : s1.value()));
 
     expect(s3.inputs()).toEqual([s1, s2]);
     s1.reset("baz");
     expect(s3.inputs()).toEqual([s1]);
   });
   it("tracks chain of input signals properly (restores context)", () => {
-    let s1 = signalFn(() => "s1");
-    let s2 = signalFn(() => "s2");
-    let s3 = signalFn(() => s1.value() + s2.value());
+    let s1 = source(() => "s1");
+    let s2 = source(() => "s2");
+    let s3 = source(() => s1.value() + s2.value());
 
     expect(s3.inputs()).toEqual([s1, s2]);
     expect(s2.inputs()).toEqual([]);
@@ -94,7 +94,7 @@ describe("signalFn", () => {
   it("triggers connected outputs for new values", () => {
     let updates = 0;
     let s1 = signal("foo");
-    let s2 = signalFn(() => s1.value());
+    let s2 = source(() => s1.value());
     s2.connect(() => updates++);
     s1.reset("bar");
 
@@ -103,7 +103,7 @@ describe("signalFn", () => {
   it("ignores outputs for equal values", () => {
     let updates = 0;
     let s1 = signal("foo");
-    let s2 = signalFn(() => {
+    let s2 = source(() => {
       s1.value();
       return "baz";
     });
@@ -119,7 +119,7 @@ describe("signalFn", () => {
       updates = [...updates, { signal, prev, next }];
     };
     let s1 = signal("foo");
-    let s2 = signalFn(() => s1.value());
+    let s2 = source(() => s1.value());
     s2.connect(triggerFn);
     s1.reset("bar");
 
@@ -131,7 +131,7 @@ describe("signalFn", () => {
   it("disconnects a connected output", () => {
     let outputs = [0, 0];
     let s1 = signal("foo");
-    let s2 = signalFn(() => s1.value());
+    let s2 = source(() => s1.value());
     s2.connect(() => outputs[0]++);
     let disconnect = s2.connect(() => outputs[1]++);
     s1.reset("bar");
@@ -144,7 +144,7 @@ describe("signalFn", () => {
   it("frees itself if there are no more connected outputs", () => {
     let runs = 0;
     let s1 = signal("foo");
-    let s2 = signalFn(() => {
+    let s2 = source(() => {
       runs++;
       return s1.value();
     });
@@ -161,21 +161,21 @@ describe("signalFn", () => {
   });
   it("connects to a referenced signal only once", () => {
     let s1 = signal("foo");
-    let s2 = signalFn(() => s1.value() + s1.value());
+    let s2 = source(() => s1.value() + s1.value());
     let disconnect = s2.connect(() => {});
     expect(s2.inputs()).toEqual([s1]);
     expect(disconnect).not.toThrow();
   });
-  it("connects to a referenced signalFn only once", () => {
-    let s1 = signalFn(() => "foo");
-    let s2 = signalFn(() => s1.value() + s1.value());
+  it("connects to a referenced source only once", () => {
+    let s1 = source(() => "foo");
+    let s2 = source(() => s1.value() + s1.value());
     let disconnect = s2.connect(() => {});
     expect(s2.inputs()).toEqual([s1]);
     expect(disconnect).not.toThrow();
   });
   it("notifies watchers when freeing itself", () => {
     let freed = 0;
-    let s = signalFn(() => "foo");
+    let s = source(() => "foo");
     let disconnect = s.connect(() => {});
     s.onFree(() => freed++);
 

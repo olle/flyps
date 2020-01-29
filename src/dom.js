@@ -1,4 +1,4 @@
-import { signalFn } from "./signal";
+import { source } from "./signal";
 import { queue } from "./internal/queue";
 
 /**
@@ -61,7 +61,7 @@ export const renderQueue = queue();
  * );
  */
 export function mount(root, viewFn, patchFn, cleanupFn = () => {}) {
-  let s = signalFn(viewFn);
+  let s = source(viewFn);
   let dirty = true;
 
   let render = () => {

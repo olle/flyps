@@ -62,25 +62,25 @@ export function signal(state) {
 }
 
 /**
- * A SignalFn is a signal that computes its state by running `fn`. It keeps
+ * A Source is a signal that computes its state by running `fn`. It keeps
  * track of and connects to all referenced input signals during the function
  * call. If the state of any of the connected input signals changes, the state
- * of SignalFn gets re-computed (which means re-running `fn`). The state held by
- * the SignalFn is the return value of `fn` and can be preset using `state`.
- * Like with signals, outputs can be connected. Whenever the state of a SignalFn
+ * of the Source gets re-computed (which means re-running `fn`). The state held
+ * by the Source is the return value of `fn` and can be preset using `state`.
+ * Like with signals, outputs can be connected. Whenever the state of a Source
  * changes, all connected outputs will be triggered.
  *
- * @typedef SignalFn
+ * @typedef Source
  */
 
 /**
- * Creates a new SignalFn.
+ * Creates a new Source.
  *
  * @param {function} fn The initial state
  * @param {*} state The initial state
- * @returns {SignalFn} The created signal.
+ * @returns {Source} The created Source.
  */
-export function signalFn(fn, state) {
+export function source(fn, state) {
   let inputs = [];
   let outputs = [];
   let disconnectors = new WeakMap();
@@ -174,8 +174,8 @@ export function signalFn(fn, state) {
 }
 
 /**
- * Holds the current, global context for a signalFn. A context urges referenced
- * signals to register as input signals. signalFns can therefore use a context
+ * Holds the current, global context for a Source. A context urges referenced
+ * signals to register as input signals. Sources can therefore use a context
  * for tracking and book keeping of referenced input signals.
  */
 let context = undefined;
